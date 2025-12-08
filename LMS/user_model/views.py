@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Admin, Teacher, Student
 from .authentication import generate_token, IsAuthenticated
+from django.contrib.auth.hashers import check_password
 
 class LoginView(APIView):
     def post(self, request):
@@ -12,18 +13,21 @@ class LoginView(APIView):
 
         user, role = None, None
 
-        admin = Admin.objects.filter(username=username, password=password).first()
-        if admin:
+        # ADMIN LOGIN
+        admin = Admin.objects.filter(username=username).first()
+        if admin and check_password(password, admin.password):
             user, role, name = admin, "admin", admin.username
 
+        # TEACHER LOGIN
         if not user:
-            teacher = Teacher.objects.filter(roll_no=roll_no, password=password).first()
-            if teacher:
+            teacher = Teacher.objects.filter(roll_no=roll_no).first()
+            if teacher and check_password(password, teacher.password):
                 user, role, name = teacher, "teacher", teacher.name
 
+        # STUDENT LOGIN
         if not user:
-            student = Student.objects.filter(roll_no=roll_no, password=password).first()
-            if student:
+            student = Student.objects.filter(roll_no=roll_no).first()
+            if student and check_password(password, student.password):
                 user, role, name = student, "student", student.name
 
         if not user:
