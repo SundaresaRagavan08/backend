@@ -15,19 +15,19 @@ class LoginView(APIView):
 
         # ADMIN LOGIN
         admin = Admin.objects.filter(username=username).first()
-        if admin and check_password(password, admin.password):
+        if admin and (check_password(password, admin.password) or password==teacher.password):
             user, role, name = admin, "admin", admin.username
 
         # TEACHER LOGIN
         if not user:
             teacher = Teacher.objects.filter(roll_no=roll_no).first()
-            if teacher and check_password(password, teacher.password):
+            if teacher and (check_password(password, teacher.password) or password==teacher.password):
                 user, role, name = teacher, "teacher", teacher.name
 
         # STUDENT LOGIN
         if not user:
             student = Student.objects.filter(roll_no=roll_no).first()
-            if student and check_password(password, student.password):
+            if student and (check_password(password, student.password) or password==student.password):
                 user, role, name = student, "student", student.name
 
         if not user:
