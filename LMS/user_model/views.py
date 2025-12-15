@@ -15,7 +15,7 @@ class LoginView(APIView):
 
         # ADMIN LOGIN
         admin = Admin.objects.filter(username=username).first()
-        if admin and (check_password(password, admin.password) or password==teacher.password):
+        if admin and (check_password(password, admin.password) or password==admin.password):
             user, role, name = admin, "admin", admin.username
 
         # TEACHER LOGIN
@@ -64,3 +64,4 @@ class GetProfile(APIView):
             return Response({"error": "Invalid role"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(profile_data)
+
