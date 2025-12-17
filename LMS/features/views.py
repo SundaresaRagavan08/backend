@@ -137,4 +137,79 @@ class CourseForClassView(APIView):
         classe = ClassName.objects.get(id=class_id)
         courses = Course.objects.filter(classname=classe)
         print(courses)
+
         return Response(CourseSerializer(courses, many=True).data)
+
+
+class SingleCoursesView(APIView):
+    authentication_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+        data = Course.objects.filter(pk=id)
+        serializer = CourseSerializer(data, many=True)
+        return Response(serializer.data)
+    
+class CourseForClassView(APIView):
+    authentication_classes = [IsAuthenticated]
+
+    def get(self, request, class_id):
+        classe = ClassName.objects.get(id=class_id)
+        courses = Course.objects.filter(classname=classe)
+        print(courses)
+        return Response(CourseSerializer(courses, many=True).data)
+    
+    
+import os
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+import google.generativeai as genai
+
+# Configure Gemini
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# Initialize model (Flash 2.5)
+model = genai.GenerativeModel(
+    model_name="gemini-2.5-flash"
+)
+
+
+@csrf_exempt
+def gemini_flash_api(request):
+    """
+    POST body example:
+    {
+        "prompt": "Explain Django REST framework in simple terms"
+    }
+    """
+
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Only POST method allowed"},
+            status=405
+        )
+
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+        prompt = body.get("prompt")
+
+        if not prompt:
+            return JsonResponse(
+                {"error": "Prompt is required"},
+                status=400
+            )
+
+        response = model.generate_content(prompt)
+
+        return JsonResponse({
+            "success": True,
+            "prompt": prompt,
+            "response": response.text
+        })
+
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "error": str(e)},
+            status=500
+        )
