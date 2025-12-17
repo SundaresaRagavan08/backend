@@ -10,4 +10,6 @@ urlpatterns = [
     path('features/courses/', CoursesView.as_view()),
     path('features/courses/<int:id>/', SingleCoursesView.as_view()), 
     path('features/teachers/', TeacherView.as_view()),
+    
+    path("features/gemini/flash/", gemini_flash_api, name="gemini_flash_api"),
 ]
